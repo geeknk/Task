@@ -1,0 +1,29 @@
+const userProfileData = [
+    {
+        user_id:"",
+        dob:"2003-06-11",
+        Mobile_no:"6748393673",
+    },
+    {
+        user_id:"",
+        dob:"2014-09-20",
+        Mobile_no:"3348323673",
+    },
+    {
+        user_id:"",
+        dob:"2012-01-25",
+        Mobile_no:"9878393634",
+    },
+    {
+        user_id:"",
+        dob:"2002-08-22",
+        Mobile_no:"6478393323",
+    },
+    {
+        user_id:"",
+        dob:"2001-12-30",
+        Mobile_no:"7748399677",
+    },
+]
+
+module.exports=userProfileData;

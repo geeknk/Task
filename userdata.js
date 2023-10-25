@@ -1,0 +1,34 @@
+const userData = [
+    {
+        firstname:"Peter",
+        lastname:"Adole",
+        email:"peter@test.com",
+        password:"120930"
+    },
+    {
+        firstname:"John",
+        lastname:"1",
+        email:"John@test.com",
+        password:"313uu4"
+    },
+    {
+        firstname:"John",
+        lastname:"2",
+        email:"John2@test.com",
+        password:"76787735"
+    },
+    {
+        firstname:"Smith",
+        lastname:"1",
+        email:"smith@test.com",
+        password:"y8748374"
+    },
+    {
+        firstname:"Smith",
+        lastname:"2",
+        email:"smith2@gmail.com",
+        password:"6r74q458u"
+    }
+]
+
+module.exports=userData;
