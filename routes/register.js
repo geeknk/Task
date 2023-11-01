@@ -7,9 +7,12 @@ const userController = require("../controllers/userController")
 
 // Route level middleware
 router.use('/changePassword',mid_register.checkAuth)
+router.use('/updateuser',mid_register.checkAuth)
 
-router.post("/register",mid_register.REG_MIDDLE,userController.register_user);
+router.get("/register",mid_register.REG_MIDDLE,userController.register_user);
 router.post("/auth/signin",userController.login_user);
-router.post("/changePassword",userController.changePass);
+router.put("/changePassword",userController.changePass);
+router.put("/forgetPassword",userController.forgetPass);
+router.put("/updateuser",userController.updateuser);
 
 module.exports=router;

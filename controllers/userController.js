@@ -1,4 +1,4 @@
-const config = require("../config/config")
+const config = require("../config/config");
 const users = require("../model/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -57,7 +57,10 @@ exports.changePass = async (req, res) => {
             await users.updateOne(email, {
               password: spassword,
             });
-            res.send({ status: "true", message: "password updated" });
+            res.send({
+              status: "true",
+              message: "password reset successfully",
+            });
           }
         } else {
           req.send({ status: "failed", message: "All fields are required" });
@@ -65,4 +68,56 @@ exports.changePass = async (req, res) => {
       }
     }
   );
+};
+exports.forgetPass = async (req, res) => {
+  const { password, new_password, email } = req.body;
+  const userData = await users.findOne({ email: email });
+  if (userData) {
+    if (password && new_password) {
+      if (password !== new_password) {
+        res.send({ status: "failed", message: "password dose not match" });
+      } else {
+        const salt = 10;
+        const spassword = await bcrypt.hash(password, salt);
+
+        await users.updateOne(
+          { email },
+          {
+            password: spassword,
+          }
+        );
+        res.send({ status: "true", message: "password updated" });
+      }
+    } else {
+      req.send({ status: "failed", message: "All fields are required" });
+    }
+  } else {
+    res.send("account dosen't exist");
+  }
+};
+
+exports.updateuser = async (req, res) => {
+  const { email } = jwt.verify(
+    req.token,
+    config.secretKey,
+    async (err, authData) => {
+      if (err) {
+        res.send({ result: "invalid token" });
+      }
+    }
+  );
+  const { username, firstname, lastname, password, mobile, uemail, address } = req.body;
+  const salt = 10;
+  const spassword = await bcrypt.hash(password, salt);
+
+  await users.updateOne(email, {
+    username: username,
+    firstname: firstname,
+    lastname: lastname,
+    password: spassword,
+    mobile: mobile,
+    email: uemail,
+    address: address,
+  });
+  res.send({ status: "true", message: "user updated successfully" });
 };
