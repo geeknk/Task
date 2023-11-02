@@ -1,4 +1,12 @@
 const mongoose = require("mongoose");
+const { db_url } = require("./config/config");
 
-mongoose.connect("mongodb://localhost:27017/mydb1")
-
+const db_connect = async ()=>{
+    try {
+        await mongoose.connect(db_url)
+        console.log("Database connected");
+    } catch (error) {
+        console.log("DB connection failed");
+    }
+}
+db_connect();
