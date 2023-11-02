@@ -12,7 +12,7 @@ router.use('/updateuser',mid_register.checkAuth)
 router.get("/register",mid_register.REG_MIDDLE,userController.register_user);
 router.post("/auth/signin",userController.login_user);
 router.put("/changePassword",userController.changePass);
-router.put("/forgetPassword",userController.forgetPass);
+router.put("/forgetpassword",userController.forgetPass);
 router.put("/updateuser",userController.updateuser);
 
 module.exports=router;

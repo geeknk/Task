@@ -2,6 +2,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const users = mongoose.model("users");
 const jwt = require("jsonwebtoken");
+const config = require("../config/config");
 
 exports.REG_MIDDLE = async (req, res, next) => {
   const userData = await users.findOne({ email: req.body.email });
@@ -14,16 +15,20 @@ exports.REG_MIDDLE = async (req, res, next) => {
 };
 
 exports.checkAuth = async (req, res, next) => {
-  const bearerHeader = req.headers['authorization'];
-  if(typeof bearerHeader !== 'undefined'){
+  const bearerHeader = req.headers["authorization"];
+  if (typeof bearerHeader !== "undefined") {
     const bearer = bearerHeader.split(" ");
     const token = bearer[1];
-    req.token = token;
+    const {email}=jwt.verify(token, config.secretKey, async (err, authData) => {
+      if (err) {
+        res.send({ result: "invalid token" });
+      }
+    });
+    req.data= {email, token}
     next();
-  }else{
+  } else {
     res.send({
-      result:"Token is not valid"
-    })
+      result: "Token is not valid",
+    });
   }
-  
 };

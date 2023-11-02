@@ -4,15 +4,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 exports.register_user = async (req, res) => {
-  const salt = 10;
-  const spassword = await bcrypt.hash(req.body.password, salt);
-
   let user = new users({
     username: req.body.username,
     firstname: req.body.firstname,
     lastname: req.body.lastname,
     email: req.body.email,
-    password: spassword,
+    password: req.body.password,
     mobile: req.body.mobile,
     address: req.body.address,
   });
@@ -23,7 +20,6 @@ exports.register_user = async (req, res) => {
 exports.login_user = async (req, res) => {
   const userData = await users.findOne({ email: req.body.email });
   const pass = bcrypt.compare(userData.password, req.body.password);
-
   const token = jwt.sign(
     { email: userData.email, id: userData._id },
     config.secretKey
@@ -32,42 +28,27 @@ exports.login_user = async (req, res) => {
   if (userData && pass) {
     res.status(200).send(token);
   } else {
-    return res
-      .status(401)
-      .send({ success: false, msg: "Email or Password is wrong" });
+    return res.status(401).send({ success: false, msg: "Email or Password is wrong" });
   }
 };
 
 exports.changePass = async (req, res) => {
-  const { email } = jwt.verify(
-    req.token,
-    config.secretKey,
-    async (err, authData) => {
-      if (err) {
-        res.send({ result: "invalid token" });
-      } else {
-        const { password, new_password } = req.body;
-        if (password && new_password) {
-          if (password !== new_password) {
-            res.send({ status: "failed", message: "password dose not match" });
-          } else {
-            const salt = 10;
-            const spassword = await bcrypt.hash(req.body.password, salt);
-
-            await users.updateOne(email, {
-              password: spassword,
-            });
-            res.send({
-              status: "true",
-              message: "password reset successfully",
-            });
-          }
-        } else {
-          req.send({ status: "failed", message: "All fields are required" });
-        }
-      }
+  const { password, new_password } = req.body;
+  if (password && new_password) {
+    if (password !== new_password) {
+      res.send({ status: "failed", message: "password dose not match" });
+    } else {
+      await users.updateOne(req.data.email, {
+        password: password,
+      });
+      res.send({
+        status: "true",
+        message: "password reset successfully",
+      });
     }
-  );
+  } else {
+    req.send({ status: "failed", message: "All fields are required" });
+  }
 };
 exports.forgetPass = async (req, res) => {
   const { password, new_password, email } = req.body;
@@ -77,13 +58,11 @@ exports.forgetPass = async (req, res) => {
       if (password !== new_password) {
         res.send({ status: "failed", message: "password dose not match" });
       } else {
-        const salt = 10;
-        const spassword = await bcrypt.hash(password, salt);
 
         await users.updateOne(
           { email },
           {
-            password: spassword,
+            password: password,
           }
         );
         res.send({ status: "true", message: "password updated" });
@@ -97,24 +76,13 @@ exports.forgetPass = async (req, res) => {
 };
 
 exports.updateuser = async (req, res) => {
-  const { email } = jwt.verify(
-    req.token,
-    config.secretKey,
-    async (err, authData) => {
-      if (err) {
-        res.send({ result: "invalid token" });
-      }
-    }
-  );
   const { username, firstname, lastname, password, mobile, uemail, address } = req.body;
-  const salt = 10;
-  const spassword = await bcrypt.hash(password, salt);
 
-  await users.updateOne(email, {
+  await users.updateOne(req.data.email, {
     username: username,
     firstname: firstname,
     lastname: lastname,
-    password: spassword,
+    password: password,
     mobile: mobile,
     email: uemail,
     address: address,
