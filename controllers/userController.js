@@ -2,90 +2,99 @@ const config = require("../config/config");
 const users = require("../model/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const {updateuser1,getdata,matchpass,modifyPass,verifyemail,userlogin,usersignup,user_list} = require("../services/userservices")
 
-exports.register_user = async (req, res) => {
-  let user = new users({
-    username: req.body.username,
-    firstname: req.body.firstname,
-    lastname: req.body.lastname,
-    email: req.body.email,
-    password: req.body.password,
-    mobile: req.body.mobile,
-    address: req.body.address,
-  });
-  const user_data = await user.save();
-  return res.status(200).send({ success: true, data: user_data });
+exports.signup = async (req, res) => {
+  const data = await usersignup(req.body)
+  if(data){
+    res.status(201).send({ success: true, msg:"User registered successfully", data: data });
+  }
 };
 
 exports.login_user = async (req, res) => {
-  const userData = await users.findOne({ email: req.body.email });
-  const pass = bcrypt.compare(userData.password, req.body.password);
-  const token = jwt.sign(
-    { email: userData.email, id: userData._id },
-    config.secretKey
-  );
-
-  if (userData && pass) {
-    res.status(200).send(token);
-  } else {
+  const loggedin = await userlogin(req.body)
+  if (!loggedin) {
     return res.status(401).send({ success: false, msg: "Email or Password is wrong" });
+  } else {
+    res.status(200).send(loggedin);
   }
 };
 
 exports.changePass = async (req, res) => {
-  const { password, new_password } = req.body;
-  if (password && new_password) {
-    if (password !== new_password) {
-      res.send({ status: "failed", message: "password dose not match" });
-    } else {
-      await users.updateOne(req.data.email, {
-        password: password,
-      });
-      res.send({
-        status: "true",
-        message: "password reset successfully",
-      });
-    }
-  } else {
-    req.send({ status: "failed", message: "All fields are required" });
+  const validpass = await matchpass(req.body)
+  if(!validpass){
+    return res.status(401).send({success: "failed", message: "password doesn't match" });
+  }try {
+    modifyPass(req.data.email,req.body);
+    res.status(201).send({success: "true", message: "password changed" });
+  } catch (error) {
+    res.status(401).send({success: "false", message: "password is not changed" });
   }
 };
-exports.forgetPass = async (req, res) => {
-  const { password, new_password, email } = req.body;
-  const userData = await users.findOne({ email: email });
-  if (userData) {
-    if (password && new_password) {
-      if (password !== new_password) {
-        res.send({ status: "failed", message: "password dose not match" });
-      } else {
 
-        await users.updateOne(
-          { email },
-          {
-            password: password,
-          }
-        );
-        res.send({ status: "true", message: "password updated" });
-      }
-    } else {
-      req.send({ status: "failed", message: "All fields are required" });
-    }
-  } else {
-    res.send("account dosen't exist");
+exports.verifyuser = async(req,res) => {
+  const validuser = await verifyemail(req.body)
+  if(!validuser){
+    res.status(401).send({success: "false", message: "user doesn't exist" });
+  }else{
+    res.status(201).send({success: "true", message: "user exist" });
+  }
+};
+
+exports.forgetPass = async (req, res) => {
+  const validpass = await matchpass(req.body)
+  if(!validpass){
+    return res.status(401).send({success: "failed", message: "password doesn't match" });
+  }try {
+    modifyPass(req.data.email,req.body);
+    res.status(201).send({success: "true", message: "password updated" });
+  } catch (error) {
+    res.status(401).send({success: "false", message: "password is not updated" });
   }
 };
 
 exports.updateuser = async (req, res) => {
-  const { username, firstname, lastname, password, mobile, uemail, address } = req.body;
+  try {
+    await updateuser1(req.data.email , req.body);
+    res.status(201).send({success: "true", message: "user updated successfully" });
+  } catch (error) {
+    res.status(402).send({success: "false", message: "user not updated" });
+  } 
+};
 
-  await users.updateOne(req.data.email, {
-    username: username,
-    firstname: firstname,
-    lastname: lastname,
-    password: password,
-    mobile: mobile,
-    email: uemail,
-    address: address,
-  });
-  res.send({ status: "true", message: "user updated successfully" });
+//get user data with the help of token (without body)
+
+exports.getuser = async (req, res) => {
+  try {
+    const userData = await getdata(req.data.email);
+    res.send(userData)
+  } catch (error) {
+    console.log(error)
+    res.status(402).send(error);
+  }
+};
+
+//get user data with the help of token (without email)
+
+exports.deluser = async (req, res) => {
+  try {
+    await deleteuser(req.data.email);
+    res.status(201).send({success: "true", message: "user deleted" });
+  } catch (error) {
+    console.log(error)
+    res.status(402).send(error);
+  }
+};
+
+// get user in the form of list (page wise)
+
+exports.userlist = async (req, res) => {
+  try{
+    const data = await user_list(req.params.page)
+    if(data){
+      res.status(201).send({success: "true", message: data });
+    }
+  }catch(error){
+    res.status(401).send({success: "false", message: "userdata not found" ,error});
+  }
 };

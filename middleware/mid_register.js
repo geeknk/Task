@@ -19,16 +19,15 @@ exports.checkAuth = async (req, res, next) => {
   if (typeof bearerHeader !== "undefined") {
     const bearer = bearerHeader.split(" ");
     const token = bearer[1];
-    const {email}=jwt.verify(token, config.secretKey, async (err, authData) => {
-      if (err) {
-        res.send({ result: "invalid token" });
-      }
-    });
-    req.data= {email, token}
-    next();
+    const {email}=jwt.verify(token, config.secretKey);
+    if(email){
+      req.data= {email, token}
+      next();
+    }else{
+      res.status(403).send({"success":"false", msg:"email not found in token"})
+    }
+    
   } else {
-    res.send({
-      result: "Token is not valid",
-    });
+    res.status(401).send({"success":"false", msg:"email not found in token"})
   }
 };
