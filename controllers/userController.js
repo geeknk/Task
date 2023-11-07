@@ -2,7 +2,7 @@ const config = require("../config/config");
 const users = require("../model/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const {updateuser1,getdata,matchpass,modifyPass,verifyemail,userlogin,usersignup,user_list} = require("../services/userservices")
+const {updateuser1,getdata,useraddress,matchpass,modifyPass,verifyemail,userlogin,usersignup,user_list} = require("../services/userservices")
 
 exports.signup = async (req, res) => {
   const data = await usersignup(req.body)
@@ -59,14 +59,14 @@ exports.updateuser = async (req, res) => {
     res.status(201).send({success: "true", message: "user updated successfully" });
   } catch (error) {
     res.status(402).send({success: "false", message: "user not updated" });
-  } 
+  }
 };
 
 //get user data with the help of token (without body)
 
 exports.getuser = async (req, res) => {
   try {
-    const userData = await getdata(req.data.email);
+    const userData = await getdata(req.data.id);
     res.send(userData)
   } catch (error) {
     console.log(error)
@@ -96,5 +96,20 @@ exports.userlist = async (req, res) => {
     }
   }catch(error){
     res.status(401).send({success: "false", message: "userdata not found" ,error});
+  }
+};
+
+// user address
+
+exports.user_address = async (req,res)=>{
+  try{
+    const data = await useraddress(req.body,req.data.id)
+    if(data){
+      res.status(401).send({success: "true", message: "address found" ,error});
+    }else{
+      res.status(401).send({success: "false", message: "address not inserted" ,error});
+    }
+  }catch(error){
+    res.status(401).send({success: "false", message:error});
   }
 };

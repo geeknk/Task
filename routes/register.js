@@ -10,12 +10,14 @@ router.use('/changePassword',mid_register.checkAuth)
 router.use('/updateuser',mid_register.checkAuth)
 router.use('/get',mid_register.checkAuth)
 router.use('/delete',mid_register.checkAuth)
+router.use('/address',mid_register.checkAuth)
 router.use('/verify-reset-password',mid_register.checkAuth)
 
 router.get("/register",mid_register.REG_MIDDLE,userController.signup);
 router.get("/get",userController.getuser);
 router.get("/list/:page",userController.userlist);
 router.post("/auth/signin",userController.login_user);
+router.post("/address",userController.user_address);
 router.put("/changePassword",userController.changePass);
 router.put("/verify-reset-password",userController.forgetPass);
 router.put("/updateuser",userController.updateuser);

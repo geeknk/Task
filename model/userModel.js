@@ -26,8 +26,9 @@ const user = mongoose.Schema({
         required:true
     },
     address:{
-        type:String,
-        required:true
+        type:'ObjectId',
+        required:true,
+        ref:"useraddress"
     },
 });
 
