@@ -3,9 +3,10 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const users = require("../model/userModel");
 const userToken = require("../model/userToken");
+const useradd = require("../model/address");
 
-const getdata= async ({email})=>{
-    return await users.findOne(email);
+const getdata= async (id)=>{
+    return await users.findOne({_id:id}).populate("address")
 }
 
 const deleteuser = async ()=>{
@@ -54,7 +55,7 @@ const modifyPass = async(email,data) =>{
 
 const userlogin = async(data) =>{
     const userData = await users.findOne({ email: data.email });
-    const pass = (userData.password === data.password)
+    const pass = bcrypt.compare(userData.password , data.password)
 
     if(pass && userData){
         const token = jwt.sign(
@@ -91,6 +92,23 @@ const user_list = async (page)=>{
     const sliced_data = data.slice(firstindex, lastindex);
     return sliced_data;
 }
+
+const useraddress = async (data,ID) => {
+    let user = new useradd({
+        user_id: ID,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        pin_code: data.pin_code,
+        phone: data.phone
+      });
+      if(user){
+        await user.save();
+        // await user.findByIdAndUpdate({})
+      }else{
+        return false;
+      }
+};
 module.exports={
     getdata,
     deleteuser,
@@ -100,5 +118,6 @@ module.exports={
     verifyemail,
     user_list,
     userlogin,
-    usersignup
+    usersignup,
+    useraddress
 }
