@@ -4,6 +4,19 @@ const bcrypt = require("bcryptjs");
 const users = require("../model/userModel");
 const userToken = require("../model/userToken");
 const useradd = require("../model/address");
+const multer = require("multer")
+const nodemailer = require("nodemailer")
+
+const transporter = nodemailer.createTransport({
+  host:'smtp.gmail.com',
+  port:587,
+  secure:false,
+  requireTLS:true,
+  auth:{
+    user:"ernitish26@gmail.com",
+    pass: "password"
+  }
+});
 
 const getdata= async (id)=>{
     return await users.findOne({_id:id}).populate("address")
@@ -31,14 +44,17 @@ const verifyemail = async (data) =>{
     const token = jwt.sign(
         { email: emailexist.email, id: emailexist._id },
         config.secretKey,
-        {expiresIn:config.JWT_EXPIRES_IN}
+        {expiresIn:config.FPASS_EXPIRESIN}
       );
-      let user = new userToken({
-        token: token
-      });
-      await user.save();
-      console.log("token saved");
-      return true
+
+      const mailOption ={
+        from: EMAIL_FROM,
+        to: EMAIL_TO,
+        subject: "Password Reset",
+        html: <link>token</link>
+      }
+      transporter.sendMail(mailOption);
+      return token;
     }else{
         return false
     }
@@ -51,6 +67,13 @@ const modifyPass = async(email,data) =>{
             password: data.password,
         }
     ); 
+    const mailOption ={
+      from: EMAIL_FROM,
+      to: EMAIL_TO,
+      subject: "Password Reset",
+      text: "Password Reset successfully"
+    }
+    transporter.sendMail(mailOption);
 }
 
 const userlogin = async(data) =>{
@@ -60,8 +83,16 @@ const userlogin = async(data) =>{
     if(pass && userData){
         const token = jwt.sign(
             { email: userData.email, id: userData._id },
-            config.secretKey
+            config.secretKey,
+            {expiresIn:config.JWT_EXPIRES_IN}
         );
+        let user = new userToken({
+          userId:userData._id,
+          token: token,
+          expiry: config.JWT_EXPIRES_IN
+        });
+        await user.save();
+        console.log("token saved");
         return token;
     }else{
         return false
@@ -79,22 +110,31 @@ const usersignup = async(data) =>{
         address: data.address,
       });
       if(user){
-        return await user.save();
+        const registered = await user.save();
+        const mailOption ={
+          from: config.EMAIL_FROM,
+          to: config.EMAIL_TO,
+          subject: "Registration",
+          text: "You Have been Registered successfully"
+        }
+        transporter.sendMail(mailOption);
+        return registered;
       }else{
         return false;
       }
 };
 
 const user_list = async (page)=>{
-    firstindex = (page - 1)*10;
-    lastindex = page *10;
+    const firstindex = (page - 1)*10;
+    const lastindex = page *10;
     const data= await users.find();
     const sliced_data = data.slice(firstindex, lastindex);
     return sliced_data;
 }
 
 const useraddress = async (data,ID) => {
-    let user = new useradd({
+    try {
+      let userAdd = new useradd({
         user_id: ID,
         address: data.address,
         city: data.city,
@@ -102,12 +142,21 @@ const useraddress = async (data,ID) => {
         pin_code: data.pin_code,
         phone: data.phone
       });
-      if(user){
-        await user.save();
-        // await user.findByIdAndUpdate({})
+      if(userAdd){
+        await userAdd.save();
+
+        await users.findByIdAndUpdate(
+          ID,
+          { $push: { address: userAdd._id } },
+          { new: true, upsert: true }
+         );
+     return true
       }else{
         return false;
       }
+    } catch (error) {
+      console.error(error)
+    }
 };
 module.exports={
     getdata,
@@ -119,5 +168,5 @@ module.exports={
     user_list,
     userlogin,
     usersignup,
-    useraddress
+    useraddress,
 }
