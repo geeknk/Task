@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
+const { ObjectId } = mongoose.Schema.Types;
 const user = mongoose.Schema({
     username:{
         type:String,
@@ -25,11 +26,10 @@ const user = mongoose.Schema({
         type:Number,
         required:true
     },
-    address:{
-        type:'ObjectId',
-        required:true,
-        ref:"useraddress"
-    },
+    address:[{
+        type: ObjectId,
+        ref: "useraddress",
+    },],
 });
 
 user.pre('save',async function(next){
@@ -43,4 +43,4 @@ user.pre('save',async function(next){
     } 
 });
 
-module.exports = mongoose.model("users",user)
+module.exports= mongoose.model("users",user);

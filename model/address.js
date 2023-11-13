@@ -1,10 +1,10 @@
 const mongoose=require("mongoose");
-const userModel = require("./userModel");
+const { ObjectId } = mongoose.Schema.Types;
 const user = mongoose.Schema({
     user_id:{
-        type:'ObjectId',
-        required:true,
-        ref: 'userModel'
+        type: ObjectId,
+        ref: "users",
+        required: true,
     },
     address:{
         type:String
@@ -21,6 +21,8 @@ const user = mongoose.Schema({
     phone:{
         type:Number
     }
-});
+},
+{timestamps:true}
+);
 
 module.exports = mongoose.model("useraddress",user)

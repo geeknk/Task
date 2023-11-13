@@ -2,17 +2,17 @@ const config = require("../config/config");
 const users = require("../model/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const {updateuser1,getdata,useraddress,matchpass,modifyPass,verifyemail,userlogin,usersignup,user_list} = require("../services/userservices")
+const userServices = require("../services/userservices")
 
 exports.signup = async (req, res) => {
-  const data = await usersignup(req.body)
+  const data = await userServices.usersignup(req.body)
   if(data){
     res.status(201).send({ success: true, msg:"User registered successfully", data: data });
   }
 };
 
-exports.login_user = async (req, res) => {
-  const loggedin = await userlogin(req.body)
+exports.loginUser = async (req, res) => {
+  const loggedin = await userServices.userlogin(req.body)
   if (!loggedin) {
     return res.status(401).send({ success: false, msg: "Email or Password is wrong" });
   } else {
@@ -21,11 +21,11 @@ exports.login_user = async (req, res) => {
 };
 
 exports.changePass = async (req, res) => {
-  const validpass = await matchpass(req.body)
+  const validpass = await userServices.matchpass(req.body)
   if(!validpass){
     return res.status(401).send({success: "failed", message: "password doesn't match" });
   }try {
-    modifyPass(req.data.email,req.body);
+    userServices.modifyPass(req.data.email,req.body);
     res.status(201).send({success: "true", message: "password changed" });
   } catch (error) {
     res.status(401).send({success: "false", message: "password is not changed" });
@@ -33,20 +33,20 @@ exports.changePass = async (req, res) => {
 };
 
 exports.verifyuser = async(req,res) => {
-  const validuser = await verifyemail(req.body)
+  const validuser = await userServices.verifyemail(req.body)
   if(!validuser){
     res.status(401).send({success: "false", message: "user doesn't exist" });
   }else{
-    res.status(201).send({success: "true", message: "user exist" });
+    res.status(201).send({success: "true", message: "user exist", token:validuser});
   }
 };
 
 exports.forgetPass = async (req, res) => {
-  const validpass = await matchpass(req.body)
+  const validpass = await userServices.matchpass(req.body)
   if(!validpass){
     return res.status(401).send({success: "failed", message: "password doesn't match" });
   }try {
-    modifyPass(req.data.email,req.body);
+    userServices.modifyPass(req.data.email,req.body);
     res.status(201).send({success: "true", message: "password updated" });
   } catch (error) {
     res.status(401).send({success: "false", message: "password is not updated" });
@@ -55,7 +55,7 @@ exports.forgetPass = async (req, res) => {
 
 exports.updateuser = async (req, res) => {
   try {
-    await updateuser1(req.data.email , req.body);
+    await userServices.updateuser1(req.data.email , req.body);
     res.status(201).send({success: "true", message: "user updated successfully" });
   } catch (error) {
     res.status(402).send({success: "false", message: "user not updated" });
@@ -66,7 +66,7 @@ exports.updateuser = async (req, res) => {
 
 exports.getuser = async (req, res) => {
   try {
-    const userData = await getdata(req.data.id);
+    const userData = await userServices.getdata(req.data.id);
     res.send(userData)
   } catch (error) {
     console.log(error)
@@ -78,7 +78,7 @@ exports.getuser = async (req, res) => {
 
 exports.deluser = async (req, res) => {
   try {
-    await deleteuser(req.data.email);
+    await userServices.deleteuser(req.data.email);
     res.status(201).send({success: "true", message: "user deleted" });
   } catch (error) {
     console.log(error)
@@ -90,7 +90,7 @@ exports.deluser = async (req, res) => {
 
 exports.userlist = async (req, res) => {
   try{
-    const data = await user_list(req.params.page)
+    const data = await userServices.user_list(req.params.page)
     if(data){
       res.status(201).send({success: "true", message: data });
     }
@@ -103,13 +103,21 @@ exports.userlist = async (req, res) => {
 
 exports.user_address = async (req,res)=>{
   try{
-    const data = await useraddress(req.body,req.data.id)
+    const data = await userServices.useraddress(req.body,req.data.id)
     if(data){
-      res.status(401).send({success: "true", message: "address found" ,error});
+      res.status(201).send({success: "true", message: "address saved" });
     }else{
-      res.status(401).send({success: "false", message: "address not inserted" ,error});
+      res.status(401).send({success: "false", message: "address not saved"});
     }
   }catch(error){
     res.status(401).send({success: "false", message:error});
+  }
+};
+
+exports.profileImg = async (req,res)=>{
+  if(req.file){
+    res.status(201).send({success: "true", message: "image uploaded" });
+  }else{
+    res.status(401).send({success: "false", message: "failed"});
   }
 };
