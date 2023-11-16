@@ -6,6 +6,9 @@ const userToken = require("../model/userToken");
 const useradd = require("../model/address");
 const multer = require("multer")
 const nodemailer = require("nodemailer")
+const axios = require("axios");
+const Cheerio =require("cheerio");
+
 
 const transporter = nodemailer.createTransport({
   host:'smtp.gmail.com',
@@ -50,8 +53,8 @@ const verifyemail = async (data) =>{
       const mailOption ={
         from: EMAIL_FROM,
         to: EMAIL_TO,
-        subject: "Password Reset",
-        html: <link>token</link>
+        subject: "Password Reset Link",
+        html: '<link>'+token+'</link>'
       }
       transporter.sendMail(mailOption);
       return token;
@@ -158,6 +161,89 @@ const useraddress = async (data,ID) => {
       console.error(error)
     }
 };
+
+const flipkart = async ()=>{
+  const movie = [];
+  try{
+  await axios.get(config.URL)
+  .then((response)=>{
+    let $ = Cheerio.load(response.data);
+    $('._2n7i6c').each(function(el, index){
+      const name = ($(this).find('a._2rpwqI').attr('title'));
+      const price = ($(this).find('div._30jeq3').text());
+      const link = ($(this).find('a.s1Q9rs').attr('href'));
+      const rating = ($(this).find('div._3LWZlK').text());
+      const discount = ($(this).find('div._3Ay6Sb').text().split(" ")[0]);
+
+      movie.push({product_name:name, price:price, rating:rating, discount:discount, link:link})      
+    });
+  })}catch(error){
+    console.log(error);
+  }
+  return movie
+};
+
+// Function to scrape the category page and get product URLs
+async function scrapeCategoryPage(categoryUrl) {
+  try {
+    const response = await axios.get(categoryUrl);
+    const productUrls = [];
+
+    const $ = Cheerio.load(response.data);
+    
+    $('a.s1Q9rs').each((index, element) => {
+      const productUrl = $(element).attr('href');
+      productUrls.push(productUrl);
+      console.log(productUrls);
+    });
+
+    return productUrls;
+  } catch (error) {
+    console.error('Error scraping category page:', error.message);
+    throw error;
+  }
+}
+
+const flipkartAll = async ()=>{
+
+  const movie = [];
+  try{
+  await axios.get(config.URL1)
+  .then((response)=>{
+    let $ = Cheerio.load(response.data);
+    $('._2kHMtA').each(function(el, index){
+      const name = ($(this).find('._4rR01T').text());
+      const productUrl = ($(this).find('a._1fQZEK').attr('href'));
+
+      movie.push({product_name:name,link:productUrl})
+    });
+  })}catch(error){
+    console.log(error);
+  }
+  return movie
+
+};
+const snapdeal = async ()=>{
+  const Tshirt = []
+  try{
+  await axios.get(config.snapURL)
+  .then((response)=>{
+    let $ = Cheerio.load(response.data);
+    $('.favDp.product-tuple-listing.js-tuple').each(function(el, index){
+      const name = ($(this).find('p.product-title').attr('title'));
+      const price = ($(this).find('span.product-price').text());
+      const link = ($(this).find('a.dp-widget-link').attr('href'));
+      const image = ($(this).find('img.product-image').attr('src'));
+      const discount = ($(this).find('.product-discount span').text().split(" ")[0]);
+      Tshirt.push({product_name:name, image:image, price:price, discount:discount, link:link})      
+      console.log(Tshirt);
+    });
+  })}catch(error){
+    console.log(error);
+  }
+  return Tshirt
+};
+
 module.exports={
     getdata,
     deleteuser,
@@ -169,4 +255,7 @@ module.exports={
     userlogin,
     usersignup,
     useraddress,
+    flipkart,
+    flipkartAll,
+    snapdeal
 }

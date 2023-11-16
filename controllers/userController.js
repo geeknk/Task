@@ -121,3 +121,35 @@ exports.profileImg = async (req,res)=>{
     res.status(401).send({success: "false", message: "failed"});
   }
 };
+
+exports.flipkartMob = async (req,res)=>{
+  try{
+    const fkart = await userServices.flipkart()
+    if(fkart){
+      res.status(201).send({success: "true", message: "userdata found", Data : fkart });
+    }
+  }catch(error){
+    res.status(401).send({success: "false", message: "userdata not found" ,error});
+  }
+};
+
+exports.flipkartAllMob = async (req,res)=>{
+  try{
+    const fkart = await userServices.flipkartAll()
+    if(fkart){
+      res.status(201).send({success: "true", message: "userdata found", Data : fkart });
+    }
+  }catch(error){
+    res.status(401).send({success: "false", message: "userdata not found" ,error});
+  }
+};
+exports.snapdealTshirt = async (req,res)=>{
+  try{
+    const sdeal = await userServices.snapdeal()
+    if(sdeal){
+      res.status(201).send({success: "true", message: "userdata found", Data : sdeal });
+    }
+  }catch(error){
+    res.status(401).send({success: "false", message: "userdata not found" ,error});
+  }
+};

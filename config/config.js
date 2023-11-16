@@ -9,3 +9,6 @@ exports.FPASS_EXPIRESIN = process.env.FPASS_EXPIRY
 exports.API_KEY = process.env.APIKEY
 exports.EMAIL_FROM = process.env.emailFrom
 exports.EMAIL_TO = process.env.emailTo
+exports.URL = process.env.url
+exports.URL1 = process.env.url1
+exports.snapURL = process.env.snapurl
