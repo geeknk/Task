@@ -1,15 +1,24 @@
-const mongoose = require("mongoose");
-const user = mongoose.Schema({
-    userId:{
-        type:Object
-    },
-    token:{
-        type:String,
-        required:true
-    },
-    expiry:{
-        type:String
-    }
-});
+const { DataTypes } = require("sequelize");
+const sequelize = require("../dbconnection");
 
-module.exports = mongoose.model("usertoken",user)
+const userToken = sequelize.define("userToken",
+  {
+    userId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    token: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    expiry: {
+      type: DataTypes.STRING,
+    }
+  },
+  {
+    tableName: "userToken",
+    timestamps: true,
+  }
+);
+
+module.exports = userToken;

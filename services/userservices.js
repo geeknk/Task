@@ -3,11 +3,13 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const users = require("../model/userModel");
 const userToken = require("../model/userToken");
+const DummyData = require("../model/DummyData");
 const useradd = require("../model/address");
 const multer = require("multer")
 const nodemailer = require("nodemailer")
 const axios = require("axios");
 const Cheerio =require("cheerio");
+const User = require("../model/register");
 
 
 const transporter = nodemailer.createTransport({
@@ -17,7 +19,7 @@ const transporter = nodemailer.createTransport({
   requireTLS:true,
   auth:{
     user:"ernitish26@gmail.com",
-    pass: "password"
+    pass: config.EMAIL_PASS
   }
 });
 
@@ -51,10 +53,10 @@ const verifyemail = async (data) =>{
       );
 
       const mailOption ={
-        from: EMAIL_FROM,
-        to: EMAIL_TO,
+        from: config.EMAIL_FROM,
+        to: config.EMAIL_TO,
         subject: "Password Reset Link",
-        html: '<link>'+token+'</link>'
+        html: `<a href = "www.google.com">${token}</a>`
       }
       transporter.sendMail(mailOption);
       return token;
@@ -71,8 +73,8 @@ const modifyPass = async(email,data) =>{
         }
     ); 
     const mailOption ={
-      from: EMAIL_FROM,
-      to: EMAIL_TO,
+      from: config.EMAIL_FROM,
+      to: config.EMAIL_TO,
       subject: "Password Reset",
       text: "Password Reset successfully"
     }
@@ -80,22 +82,21 @@ const modifyPass = async(email,data) =>{
 }
 
 const userlogin = async(data) =>{
-    const userData = await users.findOne({ email: data.email });
+    const userData = await User.findOne({ email: data.email });
     const pass = bcrypt.compare(userData.password , data.password)
 
     if(pass && userData){
         const token = jwt.sign(
-            { email: userData.email, id: userData._id },
+            { email: userData.email, id: userData.id },
             config.secretKey,
             {expiresIn:config.JWT_EXPIRES_IN}
         );
-        let user = new userToken({
-          userId:userData._id,
+        userToken.sync()
+        await userToken.create({
+          userId:userData.id,
           token: token,
           expiry: config.JWT_EXPIRES_IN
         });
-        await user.save();
-        console.log("token saved");
         return token;
     }else{
         return false
@@ -103,17 +104,16 @@ const userlogin = async(data) =>{
 }
 
 const usersignup = async(data) =>{
-    let user = new users({
+    let user = await User.create({
         username: data.username,
         firstname: data.firstname,
         lastname: data.lastname,
         email: data.email,
         password: data.password,
         mobile: data.mobile,
-        address: data.address,
+        address: data.address
       });
       if(user){
-        const registered = await user.save();
         const mailOption ={
           from: config.EMAIL_FROM,
           to: config.EMAIL_TO,
@@ -121,7 +121,7 @@ const usersignup = async(data) =>{
           text: "You Have been Registered successfully"
         }
         transporter.sendMail(mailOption);
-        return registered;
+        return user;
       }else{
         return false;
       }
@@ -243,6 +243,26 @@ const snapdeal = async ()=>{
   }
   return Tshirt
 };
+const findByAggregate = async ()=>{
+
+  //projection
+  const data = await DummyData.aggregate([
+    {$match: { country: 'Vietnam'}},
+    {$project:{_id:0, name:1, email:1}}
+  ])
+
+ /* Skip & Sort Aggregate 
+  const d = await DummyData.aggregate([
+    {$group: { _id: '$country'}},
+    {$sort: { _id:1 }} // 1 for ascending and 2 for descending
+  ])
+
+  const data = await DummyData.aggregate([
+    {$count:'total'}
+  ])
+*/
+  return data
+}
 
 module.exports={
     getdata,
@@ -257,5 +277,6 @@ module.exports={
     useraddress,
     flipkart,
     flipkartAll,
-    snapdeal
+    snapdeal,
+    findByAggregate
 }
