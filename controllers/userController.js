@@ -153,3 +153,11 @@ exports.snapdealTshirt = async (req,res)=>{
     res.status(401).send({success: "false", message: "userdata not found" ,error});
   }
 };
+exports.aggregate = async (req,res) => {
+  try {
+    const data = await userServices.findByAggregate()
+    res.status(201).send({success: "true", message: "userdata found", Data : data });
+  } catch (error) {
+    res.status(401).send({success: "false",error});
+  }
+}

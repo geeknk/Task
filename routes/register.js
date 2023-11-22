@@ -17,5 +17,6 @@ router.put("/profile-image",midCheck.upload,userController.profileImg);
 router.post("/fetch/flipkart/mobile",userController.flipkartMob);
 router.post("/fetch/flipkart/mobile/all",userController.flipkartAllMob);
 router.post("/fetch/snapdeal/t-shirt",userController.snapdealTshirt);
+router.get("/aggregate",userController.aggregate);
 
 module.exports=router;

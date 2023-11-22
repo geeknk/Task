@@ -3,9 +3,10 @@ const users = require("../model/userModel")
 const jwt = require("jsonwebtoken");
 const config = require("../config/config");
 const multer = require("multer")
+const User = require("../model/register")
 
 exports.REG_MIDDLE = async (req, res, next) => {
-  const userData = await users.findOne({ email: req.body.email });
+  const userData = await User.findOne({where:{ email: req.body.email }});
 
   if (userData) {
     return res.status(409).send({ success: false, msg: "Email already exist" });

@@ -12,3 +12,7 @@ exports.EMAIL_TO = process.env.emailTo
 exports.URL = process.env.url
 exports.URL1 = process.env.url1
 exports.snapURL = process.env.snapurl
+exports.EMAIL_PASS = process.env.pass
+exports.DB = process.env.database
+exports.USERNAME = process.env.username
+exports.PASS = process.env.password
