@@ -4,12 +4,12 @@ const bcrypt = require("bcryptjs");
 const users = require("../model/userModel");
 const userToken = require("../model/userToken");
 const DummyData = require("../model/DummyData");
-const useradd = require("../model/address");
+const User = require("../model/register");
+const address = require("../model/address");
 const multer = require("multer")
 const nodemailer = require("nodemailer")
 const axios = require("axios");
 const Cheerio =require("cheerio");
-const User = require("../model/register");
 
 
 const transporter = nodemailer.createTransport({
@@ -24,13 +24,21 @@ const transporter = nodemailer.createTransport({
 });
 
 const getdata= async (id)=>{
-    return await users.findOne({_id:id}).populate("address")
+    return await User.findOne({
+      include:[{
+        model:address
+      }]
+    },{where:{user_id:id}})
 }
 
-const deleteuser = async ()=>{
-    const data = await users.findOneAndDelete(req.data.email);
+const deleteuser = async (ID)=>{
+    const data = await User.destroy({
+      where: {
+        id: ID
+      }
+    });
   if (data) {
-    res.status(200).send({success: "true", message: "User deleted" });
+    return true
   }
 }
 
@@ -110,8 +118,7 @@ const usersignup = async(data) =>{
         lastname: data.lastname,
         email: data.email,
         password: data.password,
-        mobile: data.mobile,
-        address: data.address
+        mobile: data.mobile
       });
       if(user){
         const mailOption ={
@@ -137,7 +144,8 @@ const user_list = async (page)=>{
 
 const useraddress = async (data,ID) => {
     try {
-      let userAdd = new useradd({
+      address.sync();
+      let userAdd = await address.create({
         user_id: ID,
         address: data.address,
         city: data.city,
@@ -145,18 +153,7 @@ const useraddress = async (data,ID) => {
         pin_code: data.pin_code,
         phone: data.phone
       });
-      if(userAdd){
-        await userAdd.save();
-
-        await users.findByIdAndUpdate(
-          ID,
-          { $push: { address: userAdd._id } },
-          { new: true, upsert: true }
-         );
-     return true
-      }else{
-        return false;
-      }
+      return userAdd
     } catch (error) {
       console.error(error)
     }
