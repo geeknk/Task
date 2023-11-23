@@ -78,7 +78,7 @@ exports.getuser = async (req, res) => {
 
 exports.deluser = async (req, res) => {
   try {
-    await userServices.deleteuser(req.data.email);
+    await userServices.deleteuser(req.data.id);
     res.status(201).send({success: "true", message: "user deleted" });
   } catch (error) {
     console.log(error)

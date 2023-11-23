@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../dbconnection");
+const address = require("./address");
 const User = sequelize.define("User",
   {
     username: {
@@ -31,7 +32,9 @@ const User = sequelize.define("User",
     timestamps: true,
   }
 );
-
+User.hasMany(address, {
+  foreignKey: 'user_id'
+});
 // `sequelize.define` also returns the model
 console.log(User === sequelize.models.User); // true
 

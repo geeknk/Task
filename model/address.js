@@ -1,28 +1,36 @@
-const mongoose=require("mongoose");
-const { ObjectId } = mongoose.Schema.Types;
-const user = mongoose.Schema({
-    user_id:{
-        type: ObjectId,
-        ref: "users",
-        required: true,
+const { DataTypes } = require("sequelize");
+const sequelize = require("../dbconnection");
+const address = sequelize.define("address",
+  {
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
-    address:{
-        type:String
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    city:{
-        type:String
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    state:{
-        type:String
+    state: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    pin_code:{
-        type:Number
+    pin_code: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
-    phone:{
-        type:Number
-    }
-},
-{timestamps:true}
+    phone: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+  },
+  {
+    tableName: "address",
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("useraddress",user)
+module.exports = address;
